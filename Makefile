@@ -3,9 +3,30 @@ CFLAGS ?= -std=c11 -O2 -g
 CPPFLAGS += -Iinclude
 CPPFLAGS += -I/usr/include/libzfs
 CPPFLAGS += -I/usr/include/libspl
-ZFS_SRC ?= /home/martin/opensource/zfs
+UNAME_S := $(shell uname -s 2>/dev/null || echo Linux)
+ifeq ($(UNAME_S),FreeBSD)
+ZFS_OS ?= freebsd
+CPPFLAGS += -I/usr/local/include/libzfs
+CPPFLAGS += -I/usr/local/include/libspl
+else
+ZFS_OS ?= linux
+endif
+#
+# OpenZFS source tree used for supplemental headers (e.g. sys/zfs_ioctl.h).
+# Default to repo submodule; set empty to disable.
+#
+ZFS_SRC ?= zfs
+ifneq ($(strip $(ZFS_SRC)),)
 ifneq ($(wildcard $(ZFS_SRC)/include),)
-CPPFLAGS += -I$(ZFS_SRC)/include -I$(ZFS_SRC)/lib/libzpool/include
+CPPFLAGS += -I$(ZFS_SRC)/include
+CPPFLAGS += -I$(ZFS_SRC)/lib/libzpool/include
+ifeq ($(ZFS_OS),freebsd)
+CPPFLAGS += -I$(ZFS_SRC)/lib/libspl/include
+CPPFLAGS += -I$(ZFS_SRC)/lib/libspl/include/os/$(ZFS_OS)
+else
+CPPFLAGS += -idirafter $(ZFS_SRC)/lib/libspl/include
+endif
+endif
 endif
 CPPFLAGS += -D_GNU_SOURCE
 WARNFLAGS = -Wall -Wextra -Wshadow -Wformat=2 -Wstrict-prototypes -Wno-cast-qual

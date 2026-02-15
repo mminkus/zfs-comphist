@@ -78,7 +78,11 @@ comphist_traverse_dataset(struct dsl_dataset *ds,
 			return (err);
 
 		comphist_stats_note_traversal_error(stats);
-		if (err == EIO || err == ECKSUM || err == ENXIO) {
+		if (err == EIO || err == ENXIO
+#ifdef ECKSUM
+		    || err == ECKSUM
+#endif
+		    ) {
 			if (resume.zb_blkid == UINT64_MAX)
 				return (err);
 			resume.zb_blkid++;

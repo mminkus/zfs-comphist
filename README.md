@@ -1,5 +1,61 @@
 # zfs-comphist
 
+## Build
+
+### Preferred: bundled OpenZFS headers (submodule)
+
+```console
+git submodule update --init --recursive
+make
+```
+
+This repo vendors OpenZFS as a `zfs/` submodule and uses it for
+supplemental headers to keep builds reproducible.
+
+### Alternative: distro headers only
+
+If your system packages already provide all required headers:
+
+```console
+make ZFS_SRC=
+```
+
+On Ubuntu/Debian, that typically means installing:
+
+```console
+sudo apt install build-essential libzfslinux-dev
+```
+
+### FreeBSD notes
+
+Use GNU make on FreeBSD:
+
+```console
+pkg install gmake
+gmake
+```
+
+`make` on FreeBSD is BSD make and does not understand this GNU Makefile.
+
+## Verified Platforms
+
+The following build+run combinations have been validated:
+
+- Debian 13: `make`, `./zfs-comphist -h`
+- Ubuntu 24.04: `make`, `./zfs-comphist -h`
+- FreeBSD 15: `gmake`, `./zfs-comphist -h`, plus file-backed zpool smoke test
+- Proxmox VE 9.1.4 host: runtime validated on a large production pool (OpenZFS `2.3.4-pve1`)
+
+## Tests
+
+A FreeBSD smoke-test script is included at:
+
+- `tests/freebsd-test.sh`
+
+It creates a temporary file-backed pool, writes sample data across datasets
+with different compression settings, runs text and JSON output modes, and
+destroys the pool.
+
 ## Intro
 
 `zfs-comphist` is a read-only ZFS analysis tool that walks datasets and reports block-level compression usage by algorithm.
